@@ -55,7 +55,9 @@ class FeatureEncoder(object):
                  urban_rural_flag=False,
                  city_org_no=False,
                  elec_type=False,
+
                  accept_content_type=False,
+                 multi_accept_content_type=False,
                  accept_content_type_version='0.01',
 
                  cont_type_06table=False,
@@ -69,9 +71,12 @@ class FeatureEncoder(object):
 
                  # 用户最后一个月的缴费方式
                  last_month_pay_mode_09table=False,
+                 last_month_pay_mode_4bit_09table=False,
 
                  # 用户缴费方式 的 转变路线
-                 pay_mode_change_clue_09table=False
+                 pay_mode_change_clue_09table=False,
+                 pay_mode_4bit_change_clue_09table=False,
+
                  ):
         """
             初始化参数
@@ -112,6 +117,7 @@ class FeatureEncoder(object):
         self.city_org_no = city_org_no
         self.elec_type = elec_type
         self.accept_content_type = accept_content_type
+        self.multi_accept_content_type = multi_accept_content_type
         self.accept_content_type_version = accept_content_type_version
 
         self.cont_type_06table = cont_type_06table
@@ -122,7 +128,10 @@ class FeatureEncoder(object):
         self.org_no_7bit_09table = org_no_7bit_09table
         self.org_no_9bit_09table = org_no_9bit_09table
         self.last_month_pay_mode_09table = last_month_pay_mode_09table
+        self.last_month_pay_mode_4bit_09table = last_month_pay_mode_4bit_09table
+
         self.pay_mode_change_clue_09table = pay_mode_change_clue_09table
+        self.pay_mode_4bit_change_clue_09table = pay_mode_4bit_change_clue_09table
 
         if self.normal_num_of_rcvbl_penalty:
             self.num_of_rcvbl_penalty_mean = None
@@ -145,6 +154,9 @@ class FeatureEncoder(object):
         if self.accept_content_type:
             # 小工单类型 特征列表
             self.accept_content_type_list = None
+        if self.multi_accept_content_type:
+            # 小工单类型 特征列表
+            self.multi_accept_content_type_list = None
 
         if self.cont_type_06table:
             # 小工单类型 特征列表
@@ -167,9 +179,15 @@ class FeatureEncoder(object):
         if self.last_month_pay_mode_09table:
             # 用户最后一个月的缴费方式
             self.last_month_pay_mode_09table_list = None
+        if self.last_month_pay_mode_4bit_09table:
+            # 用户最后一个月的缴费方式
+            self.last_month_pay_mode_4bit_09table_list = None
         if self.pay_mode_change_clue_09table:
             # 用户缴费方式 的 转变路线
             self.pay_mode_change_clue_09table_list = None
+        if self.pay_mode_4bit_change_clue_09table:
+            # 用户缴费方式 的 转变路线
+            self.pay_mode_4bit_change_clue_09table_list = None
 
     def fit(self, train_data):
         """拟合数据,取得各个 类别型特征 的 特征值列表
@@ -224,6 +242,17 @@ class FeatureEncoder(object):
                      self.accept_content_type_version,
                      encoding='utf8')])
 
+        if self.multi_accept_content_type:
+            # 小工单类型 特征列表
+            # 从文件读取
+
+            self.multi_accept_content_type_list = sorted(
+                [item.strip() for item in
+                 io.open(
+                     'features_selected_to_predict/accept_content_type_selected_to_predict%s.txt' %
+                     self.accept_content_type_version,
+                     encoding='utf8')])
+
         if self.cont_type_06table:
             # self.elec_type_list = sorted(list(train_data.loc[train_data['ELEC_TYPE'].notnull(), 'ELEC_TYPE'].unique()))
             # 自定义
@@ -255,6 +284,10 @@ class FeatureEncoder(object):
             # 自定义
             self.last_month_pay_mode_09table_list = sorted(['010101', '020261', '020311', '020331', '010106'])
 
+        if self.last_month_pay_mode_4bit_09table:
+            # 自定义
+            self.last_month_pay_mode_4bit_09table_list = sorted(['010101', '020261', '020311', '020331', '010106'])
+
         if self.pay_mode_change_clue_09table:
             # 自定义
             self.pay_mode_change_clue_09table_list = sorted([item.strip() for item in io.open(
@@ -263,6 +296,12 @@ class FeatureEncoder(object):
 
             # self.pay_mode_change_clue_09table_list = sorted(
             #     list(train_data.loc[train_data['PAY_MODE_CHANGE_CLUE'].notnull(), 'PAY_MODE_CHANGE_CLUE'].unique()))
+
+        if self.pay_mode_4bit_change_clue_09table:
+            # 自定义
+            self.pay_mode_4bit_change_clue_09table_list = sorted([item.strip() for item in io.open(
+                'features_selected_to_predict/pay_mode_4bit_change_clue_selected_to_predict.txt',
+                encoding='utf8')])
 
         return self
 
@@ -380,9 +419,9 @@ class FeatureEncoder(object):
         if self.cust_no_3bit:
             print('CUST_NO前3位 %d' % len(self.cust_no_3bit_list))
             onehot_cust_no_3bit = self.get_onehot_encoding(data,
-                                                             'CUST_NO_3bit',
-                                                             labels=self.cust_no_3bit_list,
-                                                             )
+                                                           'CUST_NO_3bit',
+                                                           labels=self.cust_no_3bit_list,
+                                                           )
             data_features = pd.concat([data_features, onehot_cust_no_3bit], axis=1)
 
         if self.busi_type_code:
@@ -414,12 +453,19 @@ class FeatureEncoder(object):
                                                         )
             data_features = pd.concat([data_features, onehot_elec_type], axis=1)
         if self.accept_content_type:
-            print('小工单类型 %d' % len(self.accept_content_type_list))
+            print('小工单类型（single） %d' % len(self.accept_content_type_list))
             onehot_accept_content_type = self.get_onehot_encoding(data,
                                                                   'ACCEPT_CONTENT_TYPE',
                                                                   labels=self.accept_content_type_list,
                                                                   )
             data_features = pd.concat([data_features, onehot_accept_content_type], axis=1)
+        if self.multi_accept_content_type:
+            print('小工单类型(multi) %d' % len(self.multi_accept_content_type_list))
+            onehot_multi_accept_content_type = self.get_onehot_encoding(data,
+                                                                        'multi_accept_content_type',
+                                                                        labels=self.multi_accept_content_type_list,
+                                                                        )
+            data_features = pd.concat([data_features, onehot_multi_accept_content_type], axis=1)
 
         if self.cont_type_06table:
             print('CONT_TYPE %d' % len(self.cont_type_06table_list))
@@ -476,6 +522,14 @@ class FeatureEncoder(object):
                                                                           )
             data_features = pd.concat([data_features, onehot_last_month_pay_mode_09table], axis=1)
 
+        if self.last_month_pay_mode_4bit_09table:
+            print('用户最后一个月的缴费方式(4bit) %d' % len(self.last_month_pay_mode_4bit_09table_list))
+            onehot_last_month_pay_mode_4bit_09table = self.get_onehot_encoding(data,
+                                                                               'LAST_MONTH_PAY_MODE_4bit',
+                                                                               labels=self.last_month_pay_mode_4bit_09table_list,
+                                                                               )
+            data_features = pd.concat([data_features, onehot_last_month_pay_mode_4bit_09table], axis=1)
+
         if self.pay_mode_change_clue_09table:
             print('用户缴费方式 的 转变路线 %d' % len(self.pay_mode_change_clue_09table_list))
             onehot_pay_mode_change_clue_09table = self.get_onehot_encoding(data,
@@ -484,15 +538,25 @@ class FeatureEncoder(object):
                                                                            )
             data_features = pd.concat([data_features, onehot_pay_mode_change_clue_09table], axis=1)
 
+        if self.pay_mode_4bit_change_clue_09table:
+            print('用户缴费方式(4bit) 的 转变路线 %d' % len(self.pay_mode_4bit_change_clue_09table_list))
+            onehot_pay_mode_4bit_change_clue_09table = self.get_onehot_encoding(data,
+                                                                                'PAY_MODE_4bit_CHANGE_CLUE',
+                                                                                labels=self.pay_mode_4bit_change_clue_09table_list,
+                                                                                )
+            data_features = pd.concat([data_features, onehot_pay_mode_4bit_change_clue_09table], axis=1)
+
         return data_features
 
     def fit_transform(self, data):
 
         return self.fit(data).transform(data)
 
-    def get_onehot_encoding(self, data, attribute_name, labels):
+    def get_onehot_encoding(self, data, attribute_name, labels, mulit_type=False, join_str='+'):
         """ 提供 labels，将数据的某个属性进行onehot编码
 
+        :param mulit_type: 是否一个记录里有多个 记录
+        :param join_str: 当 mulit_type = True时，记录的连接字符
         :param data:
         :param attribute_name:
         :param labels:
@@ -502,7 +566,12 @@ class FeatureEncoder(object):
         assert attribute_name in data.columns, 'attribute_name not in data!'
         data_onehot = pd.DataFrame()
         for index, value in enumerate(labels):
-            data_onehot['%s_%s' % (attribute_name, value)] = data[attribute_name] == value
+            if not mulit_type:
+                data_onehot['%s_%s' % (attribute_name, value)] = data[attribute_name] == value
+            else:
+                data_onehot['%s_%s' % (attribute_name, value)] = map(lambda x: value in x,
+                                                                     data['multi_accept_content_type'].str.split(
+                                                                         '+').as_matrix())
 
         return data_onehot.astype(int)
 

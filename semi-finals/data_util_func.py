@@ -61,6 +61,7 @@ data_feature_encoder = FeatureEncoder(
     city_org_no=False,
     elec_type=True,
     accept_content_type=True,
+    multi_accept_content_type=True,
     accept_content_type_version='%s%s' % (ACCEPT_CONTENT_TYPE_NONSENSITIVE_RATE, ACCEPT_CONTENT_TYPE_EXTRA_PARAM),
 
     # cont_type_06table=False,
@@ -74,8 +75,10 @@ data_feature_encoder = FeatureEncoder(
 
     # 用户最后一个月的缴费方式
     # last_month_pay_mode_09table=True,
+    last_month_pay_mode_4bit_09table=True,
     # 用户缴费方式 的 转变路线
     # pay_mode_change_clue_09table=True
+    pay_mode_4bit_change_clue_09table=True
 )
 
 

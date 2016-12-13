@@ -26,10 +26,12 @@ DO_WHAT = 2
 VALIDATION_TYPE = 2
 N_FOLDS = 5
 CLASSIFY_BY_GROUPS = False
-GROUP_NAME = 'URBAN_RURAL_FLAG'
-
-
-# GROUP_NAME = 'ELEC_TYPE'
+GROUP_NAME_LIST = [
+    'URBAN_RURAL_FLAG',
+    'ELEC_TYPE',
+    'LAST_MONTH_PAY_MODE_4bit',
+]
+GROUP_NAME = GROUP_NAME_LIST[0]
 
 
 def kfold_validation(train_X, train_y, model_name='rf', n_folds=5):
@@ -180,6 +182,7 @@ def main():
                                                converters={
                                                    'CUST_NO': unicode,
                                                    'LAST_MONTH_PAY_MODE': unicode,
+                                                   'LAST_MONTH_PAY_MODE_4bit': unicode,
                                                }
                                                )
     # (658374, 48)
@@ -191,53 +194,35 @@ def main():
                                               converters={
                                                   'CUST_NO': unicode,
                                                   'LAST_MONTH_PAY_MODE': unicode,
+                                                  'LAST_MONTH_PAY_MODE_4bit': unicode,
                                               }
                                               )
     print(test_data01_a_worker_per_user.shape)
     # endregion
 
-    # region 2 准备数据和模型构建 和 特征编码
-    # 数据细分
-    #      - 规则匹配 -
-    #      - 交于分类器处理
-    # 训练集
+    # region 2 准备数据和模型构建 和 特征编码  # 数据细分  - 规则匹配 - 交于分类器处理
+
     print('-' * 80)
     train_data_toclassify, train_data_sensitive = seperate_data_to_classifier(
         train_data01_a_worker_per_user,
         plan_type=PLAN_TYPE
     )
     if DO_WHAT in [1, 2]:
+        # 验证
         model_validation(train_data_toclassify, classify_by_groups=CLASSIFY_BY_GROUPS, group_name=GROUP_NAME)
 
-    # 测试集
     if DO_WHAT in [1, 3]:
+        # 测试
         print('-' * 80)
         test_data_toclassify, test_data_sensitive = seperate_data_to_classifier(
             test_data01_a_worker_per_user,
             type='test',
             plan_type=PLAN_TYPE
         )
-        model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive, classify_by_groups=False,
-                   group_name='ELEC_TYPE')
-        # region 保存数据
-        # show_attribute_detail(
-        #     train_data_toclassify,
-        #     attribute_name='TAG',
-        # )
-        # train_data_toclassify['IS_PENALTY'] = train_data_toclassify['NUM_OF_RCVBL_PENALTY'] > 0
-        # save_data(
-        #     train_data_toclassify[
-        #         [
-        #             'CUST_NO','TAG', 'NUM_OF_WORKER', 'NUM_OF_SEARCH_ACTION', 'BUSI_TYPE_CODE',
-        #             'ACCEPT_CONTENT_TYPE', 'ELEC_TYPE', 'URBAN_RURAL_FLAG', 'HANDLE_MONTH',
-        #             'NUM_OF_IN_SEASON4', 'RCA_FLAG', 'CONT_TYPE',
-        #             'AVERAGE_RCVBL_AMT', 'ORG_NO_7bit', 'IS_PENALTY', 'NUM_OF_RCVBL_PENALTY',
-        #             'MAX_NUM_MONTH_SEARCH_ACTION','NUM_OF_USED_PAY_MODE','IS_PAY_MODE_CONTAINS_020311',
-        #             'IS_PAY_MODE_CONTAINS_010101','IS_PAY_MODE_CONTAINS_020261','LAST_MONTH_PAY_MODE'
-        #         ]
-        #     ],
-        #     'features-20161211.csv',
-        # )
+        model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
+                   classify_by_groups=CLASSIFY_BY_GROUPS,
+                   group_name=GROUP_NAME)
+
         # endregion
 
 
@@ -255,10 +240,18 @@ def get_group_index(train_data_toclassify, test_data_toclassify=None, type='ELEC
         ]
     elif type == 'URBAN_RURAL_FLAG':
         print('以城乡分组多分类器训练和预测')
-        # 共3组
+        # 共2组
         groups = [
             [1],
             [2, 3],
+        ]
+    elif type == 'LAST_MONTH_PAY_MODE_4bit':
+        print('以最后一个缴费方式（4bit）分组多分类器训练和预测')
+        # 共3组
+        groups = [
+            ['0101'],
+            ['0202'],
+            ['0203'],
         ]
     else:
         raise NotImplementedError
@@ -374,12 +367,13 @@ def model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
                                 model_name=MODEL_NAME)
             y_predict_total[group_index[1]] = y_predict
 
+    print('-' * 120)
+    get_metrics([1]*len(test_X), y_predict_total)
     # endregion
 
     # region 5 保存结果
     print(test_data_sensitive.shape)
     test_data_toclassify.loc[:, 'TAG'] = y_predict_total
-
     temp = test_data_toclassify[test_data_toclassify['TAG'] == 1]
     # 使用09表 是否连接上 作为规则 过滤用户
     # temp = temp[temp['IS_CONNECT_TO_09TABLE']==1]

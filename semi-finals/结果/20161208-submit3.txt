@@ -1,0 +1,160 @@
+/usr/bin/python2.7 /home/jdwang/PycharmProjects/customerPortrait/semi-finals/kfold_validation.py
+(658374, 48)
+(370871, 47)
+--------------------------------------------------------------------------------
+total: 658374
+is_connect_to_09table == 1 : 555748
+is_connect_to_09table == 0 : 102626
+data_connect_to_09table 进一步根据total和tag1/total过滤...
+tag1/total == 1 ——> 规则直接判为敏感: 122(敏感：122,不敏感：0)
+tag1/total < 0.001 ——> 规则直接判为非敏感: 15827(敏感：6,不敏感：15821)
+剩下: 539799(敏感：79897,不敏感：459902，比例：5.756186)
+根据 用电类别 ELEC_TYPE 进行过滤
+ELEC_TYPE_IS_NONSENSITIVE: 6(敏感：0,不敏感：6)
+剩下: 539793
+CONS_STATUS==3: 12 ——> 规则直接判为非敏感(敏感：0,不敏感：12)
+CONT_TYPE==2: 109 ——> 规则直接判为非敏感(敏感：14,不敏感：95)
+剩下: 539672(敏感：79883,不敏感：459789，比例：5.755780)
+--------------------------------------------------------------------------------
+total: 370871
+is_connect_to_09table == 1 : 201702
+is_connect_to_09table == 0 : 169169
+data_connect_to_09table 进一步根据total和tag1/total过滤...
+tag1/total == 1 ——> 规则直接判为敏感: 9
+tag1/total < 0.001 ——> 规则直接判为非敏感: 8306
+剩下: 193387
+根据 用电类别 ELEC_TYPE 进行过滤
+ELEC_TYPE_IS_NONSENSITIVE: 3
+剩下: 193384
+CONS_STATUS==3: 1 ——> 规则直接判为非敏感
+CONT_TYPE==2: 12 ——> 规则直接判为非敏感
+剩下: 193371
+--------------------------------------------------------------------------------
+工单数 1
+查询电费次数 1
+第四季度记录数 1
+应收违约金的次数 1
+平均电费 1
+是否连接上06表 1
+是否连接上07表 1
+是否连接上08表 1
+是否连接上09表 1
+是否违约 1
+是否违约超出1个月以上 1
+代表工单月份 1
+城乡标志 3
+用电类型 12
+小工单类型 169
+CONT_TYPE 1
+STATUS 2
+CONS_STATUS 2
+RCA_FLAG 2
+ORG_NO_7bit_09TABLE 75
+(539672, 278)
+(539672, 278) (539672,)
+--------------------------------------------------------------------------------
+工单数 1
+查询电费次数 1
+第四季度记录数 1
+应收违约金的次数 1
+平均电费 1
+是否连接上06表 1
+是否连接上07表 1
+是否连接上08表 1
+是否连接上09表 1
+是否违约 1
+是否违约超出1个月以上 1
+代表工单月份 1
+城乡标志 3
+用电类型 12
+小工单类型 169
+CONT_TYPE 1
+STATUS 2
+CONS_STATUS 2
+RCA_FLAG 2
+ORG_NO_7bit_09TABLE 75
+(193371, 278)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+5
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:107935
+TP:11011,FP:5814,TN:86133,FN:4977
+f1_score:0.671136
+precision_score:0.654443
+recall_score:0.688704
+accu:0.900023
+预测为敏感：16825，不敏感：91110
+validation 0 time:0s
+--------------------------------------------------------------------------------
+5
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:107935
+TP:10924,FP:5911,TN:86109,FN:4991
+f1_score:0.667115
+precision_score:0.648886
+recall_score:0.686396
+accu:0.898995
+预测为敏感：16835，不敏感：91100
+validation 1 time:0s
+--------------------------------------------------------------------------------
+5
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:107934
+TP:11047,FP:5770,TN:86152,FN:4965
+f1_score:0.673003
+precision_score:0.656895
+recall_score:0.689920
+accu:0.900541
+预测为敏感：16817，不敏感：91117
+validation 2 time:0s
+--------------------------------------------------------------------------------
+5
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:107934
+TP:11008,FP:5945,TN:86027,FN:4954
+f1_score:0.668874
+precision_score:0.649325
+recall_score:0.689638
+accu:0.899022
+预测为敏感：16953，不敏感：90981
+validation 3 time:0s
+--------------------------------------------------------------------------------
+5
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:107934
+TP:10950,FP:5880,TN:86048,FN:5056
+f1_score:0.666951
+precision_score:0.650624
+recall_score:0.684118
+accu:0.898679
+预测为敏感：16830，不敏感：91104
+validation 4 time:0s
+----------------------------------------------------------------------------------------------------
+validation result:TP:54940, FP:29320, TN:430469, FN:24943
+precision_score:0.652029
+recall_score:0.687756
+f1_score:0.669416
+total validation time:0s
+
+Process finished with exit code 0

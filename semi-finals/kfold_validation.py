@@ -11,6 +11,7 @@ from data_util_func import *
 import numpy as np
 import pandas as pd
 import time
+import io
 
 # 数值越大，输出内容越详细
 VERBOSE = 2
@@ -20,18 +21,26 @@ PLAN_TYPE = 3
 MODEL_NAME = 'rf'
 
 # 执行什么操作： 1 - 验证和测试，2- 验证 、3 - 测试
-DO_WHAT = 2
+DO_WHAT = 3
 
 # 验证类型 ： 1- 7/3， 2 - k-fold
 VALIDATION_TYPE = 2
 N_FOLDS = 5
 CLASSIFY_BY_GROUPS = False
 GROUP_NAME_LIST = [
+    'ALL',
     'URBAN_RURAL_FLAG',
     'ELEC_TYPE',
     'LAST_MONTH_PAY_MODE_4bit',
+    'IS_CONNECT_TO_08TABLE',
 ]
 GROUP_NAME = GROUP_NAME_LIST[0]
+# 设置正例放大几倍
+# auto-自动
+# config - 自定义
+POSITIVE_EXAMPLE_TIMES_TYPE = 'auto'
+# POSITIVE_EXAMPLE_TIMES_TYPE = 'config'
+POSITIVE_EXAMPLE_TIMES = 1
 
 
 def kfold_validation(train_X, train_y, model_name='rf', n_folds=5):
@@ -52,9 +61,12 @@ def kfold_validation(train_X, train_y, model_name='rf', n_folds=5):
     # 返回train和test的索引
     for index, (train_index, test_index) in enumerate(kf):
         start = time.time()
-
-        times = sum(train_y_rand == 0) / sum(train_y_rand == 1)
-
+        if POSITIVE_EXAMPLE_TIMES_TYPE == 'auto':
+            times = sum(train_y_rand == 0) / sum(train_y_rand == 1)
+        elif POSITIVE_EXAMPLE_TIMES_TYPE == 'config':
+            times = POSITIVE_EXAMPLE_TIMES
+        else:
+            raise NotImplementedError
         if VERBOSE > 1:
             print('-' * 80)
             print('训练：%d/测试：%d,共:%d,正例*%d倍' % (len(train_index), len(test_index), len(train_X), times))
@@ -155,8 +167,15 @@ def validation(train_X, train_y, model_name='rf', type=1):
 
 def predict(train_X, train_y, test_X, model_name='rf'):
     # 扩大正例数据 3/5倍，使得数据平衡
-    times = sum(train_y == 0) / sum(train_y == 1)
+    if POSITIVE_EXAMPLE_TIMES_TYPE == 'auto':
+        times = sum(train_y == 0) / sum(train_y == 1)
+    elif POSITIVE_EXAMPLE_TIMES_TYPE == 'config':
+        times = POSITIVE_EXAMPLE_TIMES
+    else:
+        raise NotImplementedError
+
     print(times)
+
     train_X_3, train_y_3 = extend_train_data(train_X, train_y, n=times)
 
     rf_model_total = model_train(
@@ -183,6 +202,7 @@ def main():
                                                    'CUST_NO': unicode,
                                                    'LAST_MONTH_PAY_MODE': unicode,
                                                    'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                   'MULTI_ELEC_DEGREE': unicode,
                                                }
                                                )
     # (658374, 48)
@@ -195,6 +215,7 @@ def main():
                                                   'CUST_NO': unicode,
                                                   'LAST_MONTH_PAY_MODE': unicode,
                                                   'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                  'MULTI_ELEC_DEGREE': unicode,
                                               }
                                               )
     print(test_data01_a_worker_per_user.shape)
@@ -207,6 +228,19 @@ def main():
         train_data01_a_worker_per_user,
         plan_type=PLAN_TYPE
     )
+    train_data_toclassify_modify_elec_type = load_data('train_features-20161213_fillElEC_TYPE_by01&09.csv',
+                                                       encoding='utf8',
+                                                       converters={
+                                                           'CUST_NO': unicode,
+                                                           'LAST_MONTH_PAY_MODE': unicode,
+                                                           'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                       }
+                                                       )
+    train_data_toclassify['ELEC_TYPE'] = train_data_toclassify_modify_elec_type['ELEC_TYPE'].as_matrix()
+
+    # sum(temp['CUST_NO'].isnull())
+    print(sum(train_data_toclassify['ELEC_TYPE'].isnull()))
+
     if DO_WHAT in [1, 2]:
         # 验证
         model_validation(train_data_toclassify, classify_by_groups=CLASSIFY_BY_GROUPS, group_name=GROUP_NAME)
@@ -219,6 +253,17 @@ def main():
             type='test',
             plan_type=PLAN_TYPE
         )
+        test_data_toclassify_modify_elec_type = load_data('test_features-20161213_addElEC_TYPE_by01&09.csv',
+                                                          encoding='utf8',
+                                                          converters={
+                                                              'CUST_NO': unicode,
+                                                              'LAST_MONTH_PAY_MODE': unicode,
+                                                              'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                          }
+                                                          )
+        test_data_toclassify['ELEC_TYPE'] = test_data_toclassify_modify_elec_type['ELEC_TYPE'].as_matrix()
+        print(sum(test_data_toclassify['ELEC_TYPE'].isnull()))
+
         model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
                    classify_by_groups=CLASSIFY_BY_GROUPS,
                    group_name=GROUP_NAME)
@@ -233,10 +278,11 @@ def get_group_index(train_data_toclassify, test_data_toclassify=None, type='ELEC
         groups = [
             [100.0],
             [200.0],
-            [202.0],
-            [405.0], [402.0], [403.0],
             [201.0],
-            [400.0, 401.0, 203.0, 300.0, 301.0]
+            [202.0],
+            [402.0],
+            [403.0],
+            [405.0],
         ]
     elif type == 'URBAN_RURAL_FLAG':
         print('以城乡分组多分类器训练和预测')
@@ -252,6 +298,13 @@ def get_group_index(train_data_toclassify, test_data_toclassify=None, type='ELEC
             ['0101'],
             ['0202'],
             ['0203'],
+        ]
+    elif type == 'IS_CONNECT_TO_08TABLE':
+        print('以 IS_CONNECT_TO_08TABLE 分组多分类器训练和预测')
+        # 共3组
+        groups = [
+            [0],
+            [1],
         ]
     else:
         raise NotImplementedError
@@ -313,8 +366,16 @@ def model_validation(train_data_toclassify, classify_by_groups=False, group_name
     # endregion
     # region 4 设置验证的预测结果
     train_data_toclassify.loc[:, 'TAG1'] = y_predict_total
-    print(sum(train_data_toclassify['TAG1'] == 1))
-    save_data(train_data_toclassify, 'train_data_toclassify_after_predict.csv')
+    # print(sum(train_data_toclassify['TAG1'] == 1))
+
+    # save_data(train_data_toclassify, 'train_data_toclassify_after_predict.csv')
+    temp = train_data_toclassify[train_data_toclassify['TAG1'] == 1]
+    save_data(
+        temp['CUST_NO'],
+        'rf_val_result_%s.csv' % GROUP_NAME,
+        header=None
+    )
+
     print('-' * 120)
     get_metrics(train_y, y_predict_total)
     end = time.time()
@@ -368,7 +429,7 @@ def model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
             y_predict_total[group_index[1]] = y_predict
 
     print('-' * 120)
-    get_metrics([1]*len(test_X), y_predict_total)
+    get_metrics([1] * len(test_X), y_predict_total)
     # endregion
 
     # region 5 保存结果
@@ -381,7 +442,7 @@ def model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
     print(temp.shape)
     save_data(
         temp['CUST_NO'],
-        'rf_resul.csv',
+        'rf_result_%s.csv' % GROUP_NAME,
         header=None
     )
     # endregion
@@ -406,8 +467,91 @@ def count_accept_content_type_metrics_after_predict():
     )
 
 
+def merge_multi_result(type=1):
+    result_list = [
+        # '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161213/20161213-12_val_resul_ALL.csv',
+        '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161214/20161214-1_val_resul.csv',
+        # '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161213/20161213-8_val_resul.csv',
+    ]
+
+    result = []
+    for file_path in result_list:
+        result += [item.strip() for item in
+                   io.open(file_path, encoding='utf8')]
+
+    if type == 1:
+        # 1票敏感
+        result = list(set(result))
+    elif type == 2:
+        # 多数敏感
+        dd = Counter(result)
+        result = map(lambda x: x[0], filter(lambda x: x[1] > 1, dd.items()))
+    else:
+        raise NotImplementedError
+    print(len(result))
+    result_dict = {key: 1 for key in result}
+    data_to_classify_true_tag = load_data('data_to_classify_true_tag.csv', encoding='utf8',
+                                          converters={'CUST_NO': unicode})
+    data_to_classify_true_tag['TAG_predict'] = data_to_classify_true_tag['CUST_NO'].map(result_dict)
+    data_to_classify_true_tag['TAG_predict'] = data_to_classify_true_tag['TAG_predict'].fillna(0)
+    data_to_classify_true_tag['IS_CORRECT'] = data_to_classify_true_tag['TAG_predict'] == data_to_classify_true_tag[
+        'TAG']
+    save_data(
+        data_to_classify_true_tag,
+        'result_compare.csv',
+    )
+    # print(data_to_classify_true_tag.head())
+    get_metrics(data_to_classify_true_tag['TAG'].as_matrix(), data_to_classify_true_tag['TAG_predict'].as_matrix(),
+                verbose=2)
+
+
+def add_predict_tag(type=1):
+    data_features = load_data('train_features_20161215.csv', encoding='utf8',
+                                          converters={
+                                              'CUST_NO': unicode,
+                                              'LAST_MONTH_PAY_MODE': unicode,
+                                              'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                              'MULTI_ELEC_DEGREE': unicode,
+                                          })
+    # print(data_features.head())
+    print(sum(data_features['ELEC_TYPE'].isnull()))
+
+    # quit()
+    result_list = [
+        '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161213/20161213-12_val_resul_ALL.csv',
+        # '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161214/20161214-1_val_resul.csv',
+        # '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161213/20161213-8_val_resul.csv',
+    ]
+
+    result = []
+    for file_path in result_list:
+        result += [item.strip() for item in
+                   io.open(file_path, encoding='utf8')]
+
+    if type == 1:
+        # 1票敏感
+        result = list(set(result))
+    elif type == 2:
+        # 多数敏感
+        dd = Counter(result)
+        result = map(lambda x: x[0], filter(lambda x: x[1] > 1, dd.items()))
+    else:
+        raise NotImplementedError
+
+    result_dict = {key: 1 for key in result}
+    data_features['TAG_predict'] = data_features['CUST_NO'].map(result_dict)
+    data_features['TAG_predict'] = data_features['TAG_predict'].fillna(0)
+    data_features['IS_CORRECT'] = data_features['TAG_predict'] == data_features['TAG']
+    save_data(
+        data_features,
+        'train_features_20161215.csv',
+    )
+
+
 if __name__ == '__main__':
     main()
+    # merge_multi_result(1)
+    # add_predict_tag()
     # kf = KFold(380542, n_folds=5, random_state=1)
     # # 返回train和test的索引
     # fout = open('validation_index.txt', 'w')

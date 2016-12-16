@@ -31,6 +31,8 @@ class FeatureEncoder(object):
                  average_rcvbl_amt=False,
                  normal_average_rcvbl_amt=False,
 
+                 money_per_degree_std=False,
+
                  is_connect_to_06table=False,
                  is_connect_to_07table=False,
                  is_connect_to_08table=False,
@@ -44,6 +46,8 @@ class FeatureEncoder(object):
                  is_pay_mode_contains_010101=False,
                  # 是否包含缴费方式 020261
                  is_pay_mode_contains_020261=False,
+
+                 is_hebiao_user=True, is_elec_eq_zero=True, elec_degree=True, is_seperate_time=True, is_mid_change=True,
 
                  handle_year=False,
                  handle_month=False,
@@ -86,6 +90,7 @@ class FeatureEncoder(object):
         self.num_of_search_action = num_of_search_action
         self.max_num_month_search_action = max_num_month_search_action
         self.num_of_used_pay_mode = num_of_used_pay_mode
+        self.money_per_degree_std = money_per_degree_std
 
         self.num_of_in_season4 = num_of_in_season4
         self.num_of_rcvbl_penalty = num_of_rcvbl_penalty
@@ -105,6 +110,12 @@ class FeatureEncoder(object):
         self.is_pay_mode_contains_020311 = is_pay_mode_contains_020311
         self.is_pay_mode_contains_010101 = is_pay_mode_contains_010101
         self.is_pay_mode_contains_020261 = is_pay_mode_contains_020261
+
+        self.is_hebiao_user = is_hebiao_user
+        self.is_elec_eq_zero = is_elec_eq_zero
+        self.elec_degree = elec_degree
+        self.is_seperate_time = is_seperate_time
+        self.is_mid_change = is_mid_change
 
         self.handle_year = handle_year
         self.handle_month = handle_month
@@ -188,6 +199,10 @@ class FeatureEncoder(object):
         if self.pay_mode_4bit_change_clue_09table:
             # 用户缴费方式 的 转变路线
             self.pay_mode_4bit_change_clue_09table_list = None
+
+        if self.elec_degree:
+            # 用户缴费方式 的 转变路线
+            self.elec_degree_list = None
 
     def fit(self, train_data):
         """拟合数据,取得各个 类别型特征 的 特征值列表
@@ -303,6 +318,10 @@ class FeatureEncoder(object):
                 'features_selected_to_predict/pay_mode_4bit_change_clue_selected_to_predict.txt',
                 encoding='utf8')])
 
+        if self.elec_degree:
+            # 自定义
+            self.elec_degree_list = sorted(list(train_data.loc[train_data['ELEC_DEGREE'].notnull(), 'ELEC_DEGREE'].unique()))
+
         return self
 
     def transform(self, data):
@@ -352,6 +371,11 @@ class FeatureEncoder(object):
                                        temp
                                        ], axis=1)
 
+        if self.money_per_degree_std:
+            # 该用户有几种缴费方式
+            print('月电价方差 1')
+            data_features = pd.concat([data_features, data['MONEY_PER_DEGREE_STD']], axis=1)
+
         if self.is_connect_to_06table:
             print('是否连接上06表 1')
             data_features = pd.concat([data_features, data['IS_CONNECT_TO_06TABLE']], axis=1)
@@ -388,6 +412,19 @@ class FeatureEncoder(object):
         if self.is_exceeding_rcvbl_ym_ge_1mon:
             print('是否违约超出1个月以上 1')
             data_features = pd.concat([data_features, data['IS_EXCEEDING_RCVBL_YM_GE_1MON']], axis=1)
+
+        if self.is_hebiao_user:
+            print('IS_HEBIAO_USER 1')
+            data_features = pd.concat([data_features, data['IS_HEBIAO_USER']], axis=1)
+        if self.is_elec_eq_zero:
+            print('IS_ELEC_EQ_ZERO 1')
+            data_features = pd.concat([data_features, data['IS_ELEC_EQ_ZERO']], axis=1)
+        if self.is_seperate_time:
+            print('IS_SEPERATE_TIME 1')
+            data_features = pd.concat([data_features, data['IS_SEPERATE_TIME']], axis=1)
+        if self.is_mid_change:
+            print('IS_MID_CHANGE 1')
+            data_features = pd.concat([data_features, data['IS_MID_CHANGE']], axis=1)
 
         if self.handle_year:
             # 年
@@ -462,7 +499,7 @@ class FeatureEncoder(object):
         if self.multi_accept_content_type:
             print('小工单类型(multi) %d' % len(self.multi_accept_content_type_list))
             onehot_multi_accept_content_type = self.get_onehot_encoding(data,
-                                                                        'multi_accept_content_type',
+                                                                        'MULTI_ACCEPT_CONTENT_TYPE',
                                                                         labels=self.multi_accept_content_type_list,
                                                                         )
             data_features = pd.concat([data_features, onehot_multi_accept_content_type], axis=1)
@@ -546,6 +583,14 @@ class FeatureEncoder(object):
                                                                                 )
             data_features = pd.concat([data_features, onehot_pay_mode_4bit_change_clue_09table], axis=1)
 
+        if self.elec_degree:
+            print('multi_elec_degree_list %d' % len(self.elec_degree_list))
+            onehot_elec_degree = self.get_onehot_encoding(data,
+                                                                'ELEC_DEGREE',
+                                                                labels=self.elec_degree_list,
+                                                                )
+            data_features = pd.concat([data_features, onehot_elec_degree], axis=1)
+
         return data_features
 
     def fit_transform(self, data):
@@ -569,9 +614,9 @@ class FeatureEncoder(object):
             if not mulit_type:
                 data_onehot['%s_%s' % (attribute_name, value)] = data[attribute_name] == value
             else:
-                data_onehot['%s_%s' % (attribute_name, value)] = map(lambda x: value in x,
-                                                                     data['multi_accept_content_type'].str.split(
-                                                                         '+').as_matrix())
+                data_onehot['%s_%s' % (attribute_name, value)] = map(lambda x: x is not np.nan and value in x,
+                                                                     data[attribute_name].str.split(
+                                                                         join_str).as_matrix())
 
         return data_onehot.astype(int)
 

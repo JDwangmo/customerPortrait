@@ -1,0 +1,186 @@
+/usr/bin/python2.7 /home/jdwang/PycharmProjects/customerPortrait/semi-finals/kfold_validation.py
+(658374, 49)
+(370871, 48)
+--------------------------------------------------------------------------------
+total: 658374
+is_connect_to_09table == 1 : 555748
+is_connect_to_09table == 0 : 102626
+剩下: 555748(敏感：80025,不敏感：475723，比例：5.944680)
+根据 用电类别 ELEC_TYPE 进行过滤
+ELEC_TYPE_IS_NONSENSITIVE: 6(敏感：0,不敏感：6)
+剩下: 555742
+剩下: 555742(敏感：80025,不敏感：475717，比例：5.944605)
+CONS_STATUS==3: 12 ——> 规则直接判为非敏感(敏感：0,不敏感：12)
+CONT_TYPE==2: 28 ——> 规则直接判为非敏感(敏感：1,不敏感：27)
+剩下: 555702(敏感：80024,不敏感：475678，比例：5.944192)
+data_connect_to_09table 进一步根据total和tag1/total过滤...
+tag1/total == 1 ——> 规则直接判为敏感: 122(敏感：122,不敏感：0)
+tag1/total < 0.01 ——> 规则直接判为非敏感: 174472(敏感：436,不敏感：174036)
+剩下: 380542(敏感：79395,不敏感：301147，比例：3.793022)
+--------------------------------------------------------------------------------
+工单数 1
+查询电费次数 1
+最大 月[查询电费]次数 1
+缴费方式 次数 1
+第四季度记录数 1
+应收违约金的次数 1
+平均电费 1
+是否连接上06表 1
+是否连接上07表 1
+是否连接上08表 1
+是否违约 1
+是否违约超出1个月以上 1
+代表工单月份 1
+handle_day
+handle_hour
+业务类型编码(大工单类型) 4
+城乡标志 3
+用电类型 12
+小工单类型 71
+CONS_STATUS 2
+RCA_FLAG 2
+ORG_NO_7bit_09TABLE 75
+(380542, 184)
+(380542, 184) (380542,)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:126848
+TP:19665,FP:8121,TN:92142,FN:6920
+f1_score:0.723364
+precision_score:0.707731
+recall_score:0.739703
+accu:0.881425
+预测为敏感：27786，不敏感：99062
+validation 0 time:0s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:126847
+TP:19704,FP:8112,TN:92368,FN:6663
+f1_score:0.727313
+precision_score:0.708369
+recall_score:0.747298
+accu:0.883521
+预测为敏感：27816，不敏感：99031
+validation 1 time:0s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:126847
+TP:19591,FP:8225,TN:92179,FN:6852
+f1_score:0.722129
+precision_score:0.704307
+recall_score:0.740877
+accu:0.881140
+预测为敏感：27816，不敏感：99031
+validation 2 time:0s
+----------------------------------------------------------------------------------------------------
+total:380542
+TP:58960,FP:24458,TN:276689,FN:20435
+f1_score:0.724266
+precision_score:0.706802
+recall_score:0.742616
+accu:0.882029
+预测为敏感：83418，不敏感：297124
+83418
+total validation time:0s
+83418
+ACCEPT_CONTENT_TYPE
+上报催办                    (1, 0, 3, 0)
+业扩变更                 (2, 15, 251, 1)
+业扩报装                   (1, 7, 81, 0)
+业扩超时                    (3, 9, 7, 1)
+中介                     (1, 7, 21, 1)
+中介来电                  (6, 10, 88, 5)
+中介查户号                   (1, 0, 1, 0)
+中介查询电费                  (1, 0, 1, 1)
+交费差错更正                 (3, 0, 19, 0)
+人员态度                 (88, 24, 11, 3)
+人员违规                 (79, 53, 11, 4)
+企业信息                   (0, 5, 17, 1)
+供电企业供电设施消缺           (2, 11, 166, 5)
+供电服务                   (1, 0, 13, 0)
+供电服务2                  (1, 0, 14, 0)
+供电设施                    (2, 1, 0, 0)
+供电设施消缺                 (0, 1, 10, 2)
+信息不全                    (1, 1, 0, 0)
+信息咨询                (4, 8, 2252, 23)
+信息补充                    (9, 2, 2, 5)
+停电信息                (5, 8, 5141, 65)
+停电信息2                   (0, 0, 5, 1)
+停电公告                   (1, 12, 5, 1)
+停电问题                 (1, 16, 100, 5)
+催收电费             (150, 12, 4210, 30)
+催缴费                 (313, 29, 42, 5)
+其他                      (1, 0, 9, 0)
+分时电价          (659, 387, 10648, 617)
+初步确定串户                  (3, 0, 3, 0)
+前工单                     (0, 0, 1, 1)
+                       ...
+网站绑定                    (0, 1, 0, 1)
+网站账户                    (2, 0, 1, 0)
+营业厅服务                  (12, 8, 2, 0)
+行风廉政                   (0, 0, 39, 2)
+补充信息               (967, 215, 10, 8)
+表箱故障               (41, 18, 969, 15)
+表计产权                    (1, 0, 4, 0)
+表计信息               (37, 14, 502, 19)
+表计故障                (19, 2, 209, 14)
+表计故障2                  (8, 1, 11, 4)
+表计线接错               (75, 61, 32, 16)
+表计线路接错                 (1, 1, 20, 0)
+计划结算电费                 (2, 0, 15, 2)
+计量表位置不合理               (1, 2, 56, 0)
+计量装置                (23, 10, 30, 12)
+设备噪音                   (1, 2, 26, 0)
+账户预收余额                 (1, 5, 55, 0)
+跨部门回呼                   (0, 0, 2, 2)
+退订               (1, 29, 15202, 224)
+重复工单                    (0, 0, 6, 1)
+重复缴费                   (1, 0, 77, 2)
+错发短信                   (0, 4, 18, 2)
+阶梯电价           (690, 135, 2460, 165)
+非家电设备损坏                (0, 0, 30, 2)
+非居民内部故障                 (1, 4, 8, 1)
+预约抄表                  (7, 0, 180, 8)
+频繁停电                  (52, 10, 6, 1)
+频繁跳闸                   (1, 3, 60, 0)
+验表              (472, 167, 549, 143)
+验表超时                   (31, 5, 1, 1)
+dtype: object
+
+Process finished with exit code 0
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=100, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:115500
+TP:11474,FP:0,TN:0,FN:104026
+f1_score:0.180730
+precision_score:1.000000
+recall_score:0.099342
+accu:0.099342
+预测为敏感：11474，不敏感：104026
+total test time:0s
+(9, 48)
+(11483, 50)
+
+
+----线上  0.68685

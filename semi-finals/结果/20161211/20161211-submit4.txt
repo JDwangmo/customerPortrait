@@ -1,0 +1,199 @@
+/usr/bin/python2.7 /home/jdwang/PycharmProjects/customerPortrait/semi-finals/kfold_validation.py
+(658374, 54)
+(370871, 53)
+--------------------------------------------------------------------------------
+total: 658374
+is_connect_to_09table == 1 : 555748
+is_connect_to_09table == 0 : 102626
+剩下: 555748(敏感：80025,不敏感：475723，比例：5.944680)
+根据 用电类别 ELEC_TYPE 进行过滤
+ELEC_TYPE_IS_NONSENSITIVE: 6(敏感：0,不敏感：6)
+剩下: 555742
+剩下: 555742(敏感：80025,不敏感：475717，比例：5.944605)
+CONS_STATUS==3: 12 ——> 规则直接判为非敏感(敏感：0,不敏感：12)
+CONT_TYPE==2: 28 ——> 规则直接判为非敏感(敏感：1,不敏感：27)
+剩下: 555702(敏感：80024,不敏感：475678，比例：5.944192)
+data_connect_to_09table 进一步根据total和tag1/total过滤...
+tag1/total == 1 ——> 规则直接判为敏感: 122(敏感：122,不敏感：0)
+tag1/total < 0.01 ——> 规则直接判为非敏感: 174472(敏感：436,不敏感：174036)
+剩下: 380542(敏感：79395,不敏感：301147，比例：3.793022)
+--------------------------------------------------------------------------------
+工单数 1
+查询电费次数 1
+最大 月[查询电费]次数 1
+第四季度记录数 1
+应收违约金的次数 1
+平均电费 1
+是否连接上06表 1
+是否连接上07表 1
+是否连接上08表 1
+是否包含缴费方式 020311 1
+是否包含缴费方式 010101 1
+是否包含缴费方式 020261 1
+是否违约 1
+是否违约超出1个月以上 1
+代表工单月份 1
+handle_day
+handle_hour
+业务类型编码(大工单类型) 4
+城乡标志 3
+用电类型 12
+小工单类型 71
+CONS_STATUS 2
+RCA_FLAG 2
+ORG_NO_7bit_09TABLE 75
+用户最后一个月的缴费方式 5
+用户缴费方式 的 转变路线 34
+(380542, 224)
+(380542, 224) (380542,)
+--------------------------------------------------------------------------------
+total: 370871
+is_connect_to_09table == 1 : 201702
+is_connect_to_09table == 0 : 169169
+剩下: 201702
+根据 用电类别 ELEC_TYPE 进行过滤
+ELEC_TYPE_IS_NONSENSITIVE: 3
+剩下: 201699
+剩下: 201699
+CONS_STATUS==3: 1 ——> 规则直接判为非敏感
+CONT_TYPE==2: 13 ——> 规则直接判为非敏感
+剩下: 201685
+data_connect_to_09table 进一步根据total和tag1/total过滤...
+tag1/total == 1 ——> 规则直接判为敏感: 9
+tag1/total < 0.01 ——> 规则直接判为非敏感: 85823
+剩下: 115500
+--------------------------------------------------------------------------------
+工单数 1
+查询电费次数 1
+最大 月[查询电费]次数 1
+第四季度记录数 1
+应收违约金的次数 1
+平均电费 1
+是否连接上06表 1
+是否连接上07表 1
+是否连接上08表 1
+是否包含缴费方式 020311 1
+是否包含缴费方式 010101 1
+是否包含缴费方式 020261 1
+是否违约 1
+是否违约超出1个月以上 1
+代表工单月份 1
+handle_day
+handle_hour
+业务类型编码(大工单类型) 4
+城乡标志 3
+用电类型 12
+小工单类型 71
+CONS_STATUS 2
+RCA_FLAG 2
+ORG_NO_7bit_09TABLE 75
+用户最后一个月的缴费方式 5
+用户缴费方式 的 转变路线 34
+(115500, 224)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=300, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:76109
+TP:11817,FP:4796,TN:55331,FN:4165
+f1_score:0.725081
+precision_score:0.711310
+recall_score:0.739394
+accu:0.882261
+预测为敏感：16613，不敏感：59496
+validation 0 time:182s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=300, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:76109
+TP:11926,FP:4923,TN:55262,FN:3998
+f1_score:0.727794
+precision_score:0.707816
+recall_score:0.748932
+accu:0.882787
+预测为敏感：16849，不敏感：59260
+validation 1 time:172s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=300, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:76108
+TP:11836,FP:4845,TN:55438,FN:3989
+f1_score:0.728235
+precision_score:0.709550
+recall_score:0.747930
+accu:0.883928
+预测为敏感：16681，不敏感：59427
+validation 2 time:177s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=300, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:76108
+TP:11862,FP:4904,TN:55407,FN:3935
+f1_score:0.728557
+precision_score:0.707503
+recall_score:0.750902
+accu:0.883862
+预测为敏感：16766，不敏感：59342
+validation 3 time:185s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=300, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:76108
+TP:11749,FP:4925,TN:55316,FN:4118
+f1_score:0.722104
+precision_score:0.704630
+recall_score:0.740468
+accu:0.881182
+预测为敏感：16674，不敏感：59434
+validation 4 time:193s
+----------------------------------------------------------------------------------------------------
+total:380542
+TP:59190,FP:24393,TN:276754,FN:20205
+f1_score:0.726356
+precision_score:0.708158
+recall_score:0.745513
+accu:0.882804
+预测为敏感：83583，不敏感：296959
+83583
+total validation time:944s
+--------------------------------------------------------------------------------
+3
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=300, n_jobs=10,
+            oob_score=False, random_state=0, verbose=0, warm_start=False)
+total:115500
+TP:11483,FP:0,TN:0,FN:104017
+f1_score:0.180859
+precision_score:1.000000
+recall_score:0.099420
+accu:0.099420
+预测为敏感：11483，不敏感：104017
+total test time:246s
+(9, 53)
+(11492, 55)
+
+Process finished with exit code 0
+
+0.68812

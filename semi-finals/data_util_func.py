@@ -20,6 +20,7 @@ ACCEPT_CONTENT_TYPE_NONSENSITIVE_RATE = 0.01
 
 ACCEPT_CONTENT_TYPE_EXTRA_PARAM = '_tag1ge5'
 RF_N_ESTIMATORS = 100
+print('RF_N_ESTIMATORS:%d' % RF_N_ESTIMATORS)
 
 # 设置数据 的特征工具类
 data_feature_encoder = FeatureEncoder(
@@ -34,6 +35,7 @@ data_feature_encoder = FeatureEncoder(
 
     average_rcvbl_amt=True,
     normal_average_rcvbl_amt=True,
+    money_per_degree_std=True,
 
     is_connect_to_06table=True,
     is_connect_to_07table=True,
@@ -56,9 +58,9 @@ data_feature_encoder = FeatureEncoder(
     handle_hour=True,
 
     # cust_no_3bit=True,
-    busi_type_code=True,
+    # busi_type_code=True,
     urban_rural_flag=True,
-    city_org_no=False,
+    # city_org_no=False,
     elec_type=True,
     accept_content_type=True,
     multi_accept_content_type=True,
@@ -75,14 +77,21 @@ data_feature_encoder = FeatureEncoder(
 
     # 用户最后一个月的缴费方式
     # last_month_pay_mode_09table=True,
-    last_month_pay_mode_4bit_09table=True,
+    # last_month_pay_mode_4bit_09table=True,
     # 用户缴费方式 的 转变路线
     # pay_mode_change_clue_09table=True
-    pay_mode_4bit_change_clue_09table=True
+    # pay_mode_4bit_change_clue_09table=True
+
+    is_hebiao_user=True,
+    is_elec_eq_zero=False,
+    elec_degree=True,
+    is_seperate_time=True,
+    is_mid_change=True,
+
 )
 
 
-def load_data(file_name, header=0, encoding='gbk', converters=None):
+def load_data(file_name, header=0, encoding='gbk', index_col=None, converters=None):
     """ 加载数据
 
     :param file_name: str
@@ -97,6 +106,7 @@ def load_data(file_name, header=0, encoding='gbk', converters=None):
                        header=header,
                        quoting=3,
                        converters=converters,
+                       index_col=index_col,
                        )
     return data
 
@@ -287,7 +297,6 @@ def truncate_org_no(x, truncate_len=7):
     :param truncate_len:
     :return:
     """
-    Counter([1, 2, 3, 4]).values()
     # 截断
     org_no_list_after_truncate = [unicode(item)[:truncate_len] for item in x]
     if len(set(org_no_list_after_truncate)) == 1:
@@ -832,7 +841,7 @@ def model_train(model_name='rf',
     return model
 
 
-def model_predict(model, test_X, test_y,verbose=2):
+def model_predict(model, test_X, test_y, verbose=2):
     """
         模型预测
     :param model:
@@ -841,11 +850,11 @@ def model_predict(model, test_X, test_y,verbose=2):
     :return:
     """
     y_predict = model.predict(test_X)
-    TP, FP, TN, FN = get_metrics(list(test_y), y_predict,verbose)
+    TP, FP, TN, FN = get_metrics(list(test_y), y_predict, verbose)
     return y_predict, TP, FP, TN, FN
 
 
-def get_metrics(true_y, predict_y,verbose=2):
+def get_metrics(true_y, predict_y, verbose=2):
     """
         结果度量
     :param true_y:
@@ -858,7 +867,7 @@ def get_metrics(true_y, predict_y,verbose=2):
     FP = sum((np.asarray(predict_y) == 1) * (np.asarray(true_y) == 0))
     TN = sum((np.asarray(predict_y) == 0) * (np.asarray(true_y) == 0))
     FN = sum((np.asarray(predict_y) == 0) * (np.asarray(true_y) == 1))
-    if verbose>1:
+    if verbose > 1:
         print('total:%d' % len(true_y))
         print('TP:%d,FP:%d,TN:%d,FN:%d' % (TP, FP, TN, FN))
         print('f1_score:%f' % f1_score(true_y, predict_y))

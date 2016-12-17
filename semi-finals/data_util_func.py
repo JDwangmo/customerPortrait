@@ -33,14 +33,17 @@ data_feature_encoder = FeatureEncoder(
     num_of_rcvbl_penalty=True,
     normal_num_of_rcvbl_penalty=False,
 
+    num_of_sensitive_workers=True,
+
     average_rcvbl_amt=True,
     normal_average_rcvbl_amt=True,
-    money_per_degree_std=True,
+    # money_per_degree_std=True,
+    month_pq_std=True,
 
-    is_connect_to_06table=True,
-    is_connect_to_07table=True,
-    is_connect_to_08table=True,
-    is_connect_to_09table=False,
+    # is_connect_to_06table=True,
+    # is_connect_to_07table=True,
+    # is_connect_to_08table=True,
+    # is_connect_to_09table=False,
     # 是否违约
     is_penalty=True,
     is_exceeding_rcvbl_ym_ge_1mon=True,
@@ -51,6 +54,10 @@ data_feature_encoder = FeatureEncoder(
     is_pay_mode_contains_010101=True,
     # 是否包含缴费方式 020261
     is_pay_mode_contains_020261=True,
+
+    is_rcvbl_amt_t_pq_equal0=True,
+    is_rcvbl_amt_equal0_t_pq_grater0=True,
+    is_rcvbl_amt_lower0=True,
 
     handle_year=False,
     handle_month=True,
@@ -76,17 +83,18 @@ data_feature_encoder = FeatureEncoder(
     org_no_9bit_09table=True,
 
     # 用户最后一个月的缴费方式
-    # last_month_pay_mode_09table=True,
-    # last_month_pay_mode_4bit_09table=True,
+    last_month_pay_mode_09table=True,
+    last_month_pay_mode_4bit_09table=True,
     # 用户缴费方式 的 转变路线
     # pay_mode_change_clue_09table=True
     # pay_mode_4bit_change_clue_09table=True
 
-    is_hebiao_user=True,
-    is_elec_eq_zero=False,
-    elec_degree=True,
-    is_seperate_time=True,
-    is_mid_change=True,
+    elec_degree_09table=True,
+
+    is_hebiao_user_09table=True,
+    is_elec_eq_zero_09table=False,
+    is_seperate_time_09table=True,
+    is_mid_change_09table=True,
 
 )
 

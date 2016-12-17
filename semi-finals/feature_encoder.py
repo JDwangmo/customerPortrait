@@ -28,10 +28,14 @@ class FeatureEncoder(object):
                  num_of_rcvbl_penalty=False,
                  normal_num_of_rcvbl_penalty=False,
 
+                 num_of_sensitive_workers=False,
+
                  average_rcvbl_amt=False,
                  normal_average_rcvbl_amt=False,
 
                  money_per_degree_std=False,
+                 # 月电量 方差
+                 month_pq_std=False,
 
                  is_connect_to_06table=False,
                  is_connect_to_07table=False,
@@ -47,7 +51,16 @@ class FeatureEncoder(object):
                  # 是否包含缴费方式 020261
                  is_pay_mode_contains_020261=False,
 
-                 is_hebiao_user=True, is_elec_eq_zero=True, elec_degree=True, is_seperate_time=True, is_mid_change=True,
+                 is_rcvbl_amt_t_pq_equal0=False,
+                 is_rcvbl_amt_equal0_t_pq_grater0=False,
+                 is_rcvbl_amt_lower0=False,
+
+                 is_hebiao_user_09table=False,
+                 is_elec_eq_zero_09table=False,
+                 is_seperate_time_09table=False,
+                 is_mid_change_09table=False,
+                 # 电价最高档数
+                 elec_degree_09table=False,
 
                  handle_year=False,
                  handle_month=False,
@@ -91,8 +104,10 @@ class FeatureEncoder(object):
         self.max_num_month_search_action = max_num_month_search_action
         self.num_of_used_pay_mode = num_of_used_pay_mode
         self.money_per_degree_std = money_per_degree_std
+        self.month_pq_std = month_pq_std
 
         self.num_of_in_season4 = num_of_in_season4
+        self.num_of_sensitive_workers = num_of_sensitive_workers
         self.num_of_rcvbl_penalty = num_of_rcvbl_penalty
         self.normal_num_of_rcvbl_penalty = normal_num_of_rcvbl_penalty
 
@@ -111,11 +126,15 @@ class FeatureEncoder(object):
         self.is_pay_mode_contains_010101 = is_pay_mode_contains_010101
         self.is_pay_mode_contains_020261 = is_pay_mode_contains_020261
 
-        self.is_hebiao_user = is_hebiao_user
-        self.is_elec_eq_zero = is_elec_eq_zero
-        self.elec_degree = elec_degree
-        self.is_seperate_time = is_seperate_time
-        self.is_mid_change = is_mid_change
+        self.is_rcvbl_amt_t_pq_equal0 = is_rcvbl_amt_t_pq_equal0
+        self.is_rcvbl_amt_equal0_t_pq_grater0 = is_rcvbl_amt_equal0_t_pq_grater0
+        self.is_rcvbl_amt_lower0 = is_rcvbl_amt_lower0
+
+        self.is_hebiao_user_09table = is_hebiao_user_09table
+        self.is_elec_eq_zero_09table = is_elec_eq_zero_09table
+        self.elec_degree_09table = elec_degree_09table
+        self.is_seperate_time_09table = is_seperate_time_09table
+        self.is_mid_change_09table = is_mid_change_09table
 
         self.handle_year = handle_year
         self.handle_month = handle_month
@@ -200,10 +219,6 @@ class FeatureEncoder(object):
             # 用户缴费方式 的 转变路线
             self.pay_mode_4bit_change_clue_09table_list = None
 
-        if self.elec_degree:
-            # 用户缴费方式 的 转变路线
-            self.elec_degree_list = None
-
     def fit(self, train_data):
         """拟合数据,取得各个 类别型特征 的 特征值列表
 
@@ -286,7 +301,7 @@ class FeatureEncoder(object):
         if self.rca_flag_07table:
             # self.elec_type_list = sorted(list(train_data.loc[train_data['ELEC_TYPE'].notnull(), 'ELEC_TYPE'].unique()))
             # 自定义
-            self.rca_flag_07table_list = sorted([0, 1])
+            self.rca_flag_07table_list = sorted([1])
         if self.org_no_7bit_09table:
             self.org_no_7bit_09table_list = sorted(
                 list(train_data.loc[train_data['ORG_NO_7bit'].notnull(), 'ORG_NO_7bit'].unique()))
@@ -318,16 +333,12 @@ class FeatureEncoder(object):
                 'features_selected_to_predict/pay_mode_4bit_change_clue_selected_to_predict.txt',
                 encoding='utf8')])
 
-        if self.elec_degree:
-            # 自定义
-            self.elec_degree_list = sorted(list(train_data.loc[train_data['ELEC_DEGREE'].notnull(), 'ELEC_DEGREE'].unique()))
-
         return self
 
     def transform(self, data):
 
         data_features = pd.DataFrame()
-
+        # region 直接特征提取
         if self.num_of_worker:
             print('工单数 1')
             data_features = pd.concat([data_features, data['NUM_OF_WORKER']], axis=1)
@@ -348,6 +359,10 @@ class FeatureEncoder(object):
         if self.num_of_in_season4:
             print('第四季度记录数 1')
             data_features = pd.concat([data_features, data['NUM_OF_IN_SEASON4']], axis=1)
+
+        if self.num_of_sensitive_workers:
+            print('含敏感词的工单记录数 1')
+            data_features = pd.concat([data_features, data['NUM_OF_SENSITIVE_WORKERS']], axis=1)
 
         if self.num_of_rcvbl_penalty:
             print('应收违约金的次数 1')
@@ -375,6 +390,11 @@ class FeatureEncoder(object):
             # 该用户有几种缴费方式
             print('月电价方差 1')
             data_features = pd.concat([data_features, data['MONEY_PER_DEGREE_STD']], axis=1)
+
+        if self.month_pq_std:
+            # 该用户有几种缴费方式
+            print('月电量方差 1')
+            data_features = pd.concat([data_features, data['MONTH_PQ_STD']], axis=1)
 
         if self.is_connect_to_06table:
             print('是否连接上06表 1')
@@ -404,6 +424,18 @@ class FeatureEncoder(object):
             print('是否包含缴费方式 020261 1')
             data_features = pd.concat([data_features, data['IS_PAY_MODE_CONTAINS_020261']], axis=1)
 
+        if self.is_rcvbl_amt_t_pq_equal0:
+            print('RCVBL_AMT_T_PQ_equal0 1')
+            data_features = pd.concat([data_features, data['RCVBL_AMT_T_PQ_equal0']], axis=1)
+
+        if self.is_rcvbl_amt_equal0_t_pq_grater0:
+            print('RCVBL_AMT_equal0_T_PQ_grater0 1')
+            data_features = pd.concat([data_features, data['RCVBL_AMT_equal0_T_PQ_grater0']], axis=1)
+
+        if self.is_rcvbl_amt_lower0:
+            print('RCVBL_AMT_lower0 1')
+            data_features = pd.concat([data_features, data['RCVBL_AMT_lower0']], axis=1)
+
         if self.is_penalty:
             print('是否违约 1')
             data['IS_PENALTY'] = data['NUM_OF_RCVBL_PENALTY'] > 0
@@ -413,16 +445,16 @@ class FeatureEncoder(object):
             print('是否违约超出1个月以上 1')
             data_features = pd.concat([data_features, data['IS_EXCEEDING_RCVBL_YM_GE_1MON']], axis=1)
 
-        if self.is_hebiao_user:
+        if self.is_hebiao_user_09table:
             print('IS_HEBIAO_USER 1')
             data_features = pd.concat([data_features, data['IS_HEBIAO_USER']], axis=1)
-        if self.is_elec_eq_zero:
+        if self.is_elec_eq_zero_09table:
             print('IS_ELEC_EQ_ZERO 1')
             data_features = pd.concat([data_features, data['IS_ELEC_EQ_ZERO']], axis=1)
-        if self.is_seperate_time:
+        if self.is_seperate_time_09table:
             print('IS_SEPERATE_TIME 1')
             data_features = pd.concat([data_features, data['IS_SEPERATE_TIME']], axis=1)
-        if self.is_mid_change:
+        if self.is_mid_change_09table:
             print('IS_MID_CHANGE 1')
             data_features = pd.concat([data_features, data['IS_MID_CHANGE']], axis=1)
 
@@ -443,16 +475,22 @@ class FeatureEncoder(object):
 
         if self.handle_day:
             # 日
-            print('handle_day')
+            print('handle_day 1')
             feature_handle_day = data['HANDLE_TIME'].apply(lambda x: self.get_date(x, type='day'))
             data_features = pd.concat([data_features, feature_handle_day], axis=1)
 
         if self.handle_hour:
             # 时
-            print('handle_hour')
+            print('handle_hour 1')
             feature_handle_hour = data['HANDLE_TIME'].apply(lambda x: self.get_date(x, type='hour'))
             data_features = pd.concat([data_features, feature_handle_hour], axis=1)
 
+        if self.elec_degree_09table:
+            print('电价到达档数 1')
+            data_features = pd.concat([data_features, data['ELEC_DEGREE']], axis=1)
+
+        # endregion
+        # region 需要 onehot 编码
         if self.cust_no_3bit:
             print('CUST_NO前3位 %d' % len(self.cust_no_3bit_list))
             onehot_cust_no_3bit = self.get_onehot_encoding(data,
@@ -582,14 +620,7 @@ class FeatureEncoder(object):
                                                                                 labels=self.pay_mode_4bit_change_clue_09table_list,
                                                                                 )
             data_features = pd.concat([data_features, onehot_pay_mode_4bit_change_clue_09table], axis=1)
-
-        if self.elec_degree:
-            print('multi_elec_degree_list %d' % len(self.elec_degree_list))
-            onehot_elec_degree = self.get_onehot_encoding(data,
-                                                                'ELEC_DEGREE',
-                                                                labels=self.elec_degree_list,
-                                                                )
-            data_features = pd.concat([data_features, onehot_elec_degree], axis=1)
+        # endregion
 
         return data_features
 

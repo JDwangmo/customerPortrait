@@ -21,20 +21,21 @@ PLAN_TYPE = 3
 MODEL_NAME = 'rf'
 
 # 执行什么操作： 1 - 验证和测试，2- 验证 、3 - 测试
-DO_WHAT = 3
+DO_WHAT = 1
 
 # 验证类型 ： 1- 7/3， 2 - k-fold
 VALIDATION_TYPE = 2
 N_FOLDS = 5
 CLASSIFY_BY_GROUPS = False
 GROUP_NAME_LIST = [
-    'ALL',
     'URBAN_RURAL_FLAG',
     'ELEC_TYPE',
     'LAST_MONTH_PAY_MODE_4bit',
     'IS_CONNECT_TO_08TABLE',
 ]
 GROUP_NAME = GROUP_NAME_LIST[0]
+if not CLASSIFY_BY_GROUPS:
+    GROUP_NAME = 'ALL'
 # 设置正例放大几倍
 # auto-自动
 # config - 自定义
@@ -191,84 +192,6 @@ def predict(train_X, train_y, test_X, model_name='rf'):
     y_predict_total, TP, FP, TN, FN = model_predict(rf_model_total, test_X, [1] * len(test_X))
     # print(sum(y_predict_total == 1), len(y_predict_total == 1))
     return y_predict_total
-
-
-def main():
-    # region 1 恢复
-    # 训练集
-    train_data01_a_worker_per_user = load_data('train_data01_a_worker_per_user.csv',
-                                               encoding='utf8',
-                                               converters={
-                                                   'CUST_NO': unicode,
-                                                   'LAST_MONTH_PAY_MODE': unicode,
-                                                   'LAST_MONTH_PAY_MODE_4bit': unicode,
-                                                   'MULTI_ELEC_DEGREE': unicode,
-                                               }
-                                               )
-    # (658374, 48)
-    print(train_data01_a_worker_per_user.shape)
-
-    # 4-2-2 测试集
-    test_data01_a_worker_per_user = load_data('test_data01_a_worker_per_user.csv',
-                                              encoding='utf8',
-                                              converters={
-                                                  'CUST_NO': unicode,
-                                                  'LAST_MONTH_PAY_MODE': unicode,
-                                                  'LAST_MONTH_PAY_MODE_4bit': unicode,
-                                                  'MULTI_ELEC_DEGREE': unicode,
-                                              }
-                                              )
-    print(test_data01_a_worker_per_user.shape)
-    # endregion
-
-    # region 2 准备数据和模型构建 和 特征编码  # 数据细分  - 规则匹配 - 交于分类器处理
-
-    print('-' * 80)
-    train_data_toclassify, train_data_sensitive = seperate_data_to_classifier(
-        train_data01_a_worker_per_user,
-        plan_type=PLAN_TYPE
-    )
-    train_data_toclassify_modify_elec_type = load_data('train_features-20161213_fillElEC_TYPE_by01&09.csv',
-                                                       encoding='utf8',
-                                                       converters={
-                                                           'CUST_NO': unicode,
-                                                           'LAST_MONTH_PAY_MODE': unicode,
-                                                           'LAST_MONTH_PAY_MODE_4bit': unicode,
-                                                       }
-                                                       )
-    train_data_toclassify['ELEC_TYPE'] = train_data_toclassify_modify_elec_type['ELEC_TYPE'].as_matrix()
-
-    # sum(temp['CUST_NO'].isnull())
-    print(sum(train_data_toclassify['ELEC_TYPE'].isnull()))
-
-    if DO_WHAT in [1, 2]:
-        # 验证
-        model_validation(train_data_toclassify, classify_by_groups=CLASSIFY_BY_GROUPS, group_name=GROUP_NAME)
-
-    if DO_WHAT in [1, 3]:
-        # 测试
-        print('-' * 80)
-        test_data_toclassify, test_data_sensitive = seperate_data_to_classifier(
-            test_data01_a_worker_per_user,
-            type='test',
-            plan_type=PLAN_TYPE
-        )
-        test_data_toclassify_modify_elec_type = load_data('test_features-20161213_addElEC_TYPE_by01&09.csv',
-                                                          encoding='utf8',
-                                                          converters={
-                                                              'CUST_NO': unicode,
-                                                              'LAST_MONTH_PAY_MODE': unicode,
-                                                              'LAST_MONTH_PAY_MODE_4bit': unicode,
-                                                          }
-                                                          )
-        test_data_toclassify['ELEC_TYPE'] = test_data_toclassify_modify_elec_type['ELEC_TYPE'].as_matrix()
-        print(sum(test_data_toclassify['ELEC_TYPE'].isnull()))
-
-        model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
-                   classify_by_groups=CLASSIFY_BY_GROUPS,
-                   group_name=GROUP_NAME)
-
-        # endregion
 
 
 def get_group_index(train_data_toclassify, test_data_toclassify=None, type='ELEC_TYPE'):
@@ -506,19 +429,40 @@ def merge_multi_result(type=1):
 
 
 def add_predict_tag(type=1):
-    data_features = load_data('train_features_20161215.csv', encoding='utf8',
-                                          converters={
-                                              'CUST_NO': unicode,
-                                              'LAST_MONTH_PAY_MODE': unicode,
-                                              'LAST_MONTH_PAY_MODE_4bit': unicode,
-                                              'MULTI_ELEC_DEGREE': unicode,
-                                          })
+    data_features = load_data('test_features_20161215.csv', encoding='utf8',
+                              converters={
+                                  'CUST_NO': unicode,
+                                  'LAST_MONTH_PAY_MODE': unicode,
+                                  'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                  'ELEC_DEGREE': unicode,
+                              })
+    train_data_toclassify_modify_elec_type = load_data('test_RCVBL_AMT&T_PQ.csv',
+                                                       encoding='utf8',
+                                                       converters={
+                                                           'CUST_NO': unicode,
+                                                           'LAST_MONTH_PAY_MODE': unicode,
+                                                           'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                       }
+                                                       )
     # print(data_features.head())
-    print(sum(data_features['ELEC_TYPE'].isnull()))
+    # print(sum(data_features['ELEC_TYPE'].isnull()))
+    # train_sensitiveWorkCount = load_data(
+    #     'test_sensitiveWorkCount.csv',
+    #     encoding='utf8', converters={'CUST_NO': unicode}
+    # )
+    train_data_toclassify_modify_elec_type['CUST_NO'] = data_features['CUST_NO'].as_matrix()
+    # data_features['ELEC_TYPE'] = train_data_toclassify_modify_elec_type['ELEC_TYPE'].as_matrix()
+    save_data(
+        train_data_toclassify_modify_elec_type,
+        'test_RCVBL_AMT&T_PQ-1.csv'
+    )
+    # print(sum(data_features['ELEC_TYPE'].isnull()))
 
-    # quit()
-    result_list = [
-        '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161213/20161213-12_val_resul_ALL.csv',
+
+    print(data_features.head())
+    quit()
+    result11_list = [
+        '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161215/20161215-1.csv',
         # '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161214/20161214-1_val_resul.csv',
         # '/home/jdwang/PycharmProjects/customerPortrait/semi-finals/结果/20161213/20161213-8_val_resul.csv',
     ]
@@ -541,11 +485,80 @@ def add_predict_tag(type=1):
     result_dict = {key: 1 for key in result}
     data_features['TAG_predict'] = data_features['CUST_NO'].map(result_dict)
     data_features['TAG_predict'] = data_features['TAG_predict'].fillna(0)
-    data_features['IS_CORRECT'] = data_features['TAG_predict'] == data_features['TAG']
+    # data_features['IS_CORRECT'] = data_features['TAG_predict'] == data_features['TAG']
     save_data(
         data_features,
-        'train_features_20161215.csv',
+        'test_features_20161215-TAG.csv',
     )
+
+
+def main():
+    # region 1 恢复
+    # 训练集
+    train_data01_a_worker_per_user = load_data('train_data01_a_worker_per_user.csv',
+                                               encoding='utf8',
+                                               converters={
+                                                   'CUST_NO': unicode,
+                                                   'LAST_MONTH_PAY_MODE': unicode,
+                                                   'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                   'MULTI_ELEC_DEGREE': unicode,
+                                               }
+                                               )
+    # (658374, 48)
+    print(train_data01_a_worker_per_user.shape)
+
+    # 4-2-2 测试集
+    test_data01_a_worker_per_user = load_data('test_data01_a_worker_per_user.csv',
+                                              encoding='utf8',
+                                              converters={
+                                                  'CUST_NO': unicode,
+                                                  'LAST_MONTH_PAY_MODE': unicode,
+                                                  'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                  'MULTI_ELEC_DEGREE': unicode,
+                                              }
+                                              )
+    print(test_data01_a_worker_per_user.shape)
+    # endregion
+
+    # region 2 准备数据和模型构建 和 特征编码  # 数据细分  - 规则匹配 - 交于分类器处理
+
+    print('-' * 80)
+    train_data_toclassify, train_data_sensitive = seperate_data_to_classifier(
+        train_data01_a_worker_per_user,
+        plan_type=PLAN_TYPE
+    )
+
+
+    # sum(temp['CUST_NO'].isnull())
+    print(sum(train_data_toclassify['ELEC_TYPE'].isnull()))
+    if DO_WHAT in [1, 2]:
+        # 验证
+        model_validation(train_data_toclassify, classify_by_groups=CLASSIFY_BY_GROUPS, group_name=GROUP_NAME)
+
+    if DO_WHAT in [1, 3]:
+        # 测试
+        print('-' * 80)
+        test_data_toclassify, test_data_sensitive = seperate_data_to_classifier(
+            test_data01_a_worker_per_user,
+            type='test',
+            plan_type=PLAN_TYPE
+        )
+        test_data_toclassify_modify_elec_type = load_data('test_features-20161213_addElEC_TYPE_by01&09.csv',
+                                                          encoding='utf8',
+                                                          converters={
+                                                              'CUST_NO': unicode,
+                                                              'LAST_MONTH_PAY_MODE': unicode,
+                                                              'LAST_MONTH_PAY_MODE_4bit': unicode,
+                                                          }
+                                                          )
+        test_data_toclassify['ELEC_TYPE'] = test_data_toclassify_modify_elec_type['ELEC_TYPE'].as_matrix()
+        print(sum(test_data_toclassify['ELEC_TYPE'].isnull()))
+
+        model_test(train_data_toclassify, test_data_toclassify, test_data_sensitive,
+                   classify_by_groups=CLASSIFY_BY_GROUPS,
+                   group_name=GROUP_NAME)
+
+        # endregion
 
 
 if __name__ == '__main__':

@@ -1,0 +1,3 @@
+文件名 MD5值
+test.zip    0B0lM4AAueOhuQnMIrpMZw==
+train.zip   9+gVkguEDbiGRqKVjs6Xaw==

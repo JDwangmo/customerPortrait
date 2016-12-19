@@ -24,7 +24,14 @@
             - 最终线上排名：
                 - 初赛：A榜 - 0.22992，排第52; B榜 - 0.22722，排第53;
                 - 复赛：A榜 - 0.70404，排第9; B榜 - 0.70925，排第8;
-    
+        - 数据集：
+          - Data_Update： 修正后的比赛数据集  ----> 为节省空间，已进行压缩和[存盘]()，可以直接下载压缩到  semi-finals 文件夹即可
+          - data_temp：数据缓存  ----> 为节省空间，已进行压缩和[存盘]()，可以直接下载压缩到  semi-finals 文件夹即可
+            - test_data01_a_worker_per_user.csv： 测试集特征
+            - train_data01_a_worker_per_user.csv： 训练集特征
+            - test_data09_merge_label_df.csv： 表9测试集特征
+            - train_data09_merge_label_df.csv： 表9训练集特征
+            
 - 读取文件时候，要特别注意 各个字段的类型，如果是字符串类型，被以整型读取将会改变不少，比如损失很多0等
     - 可以通过设置 converters={'CONS_NO':unicode} 等解决
     

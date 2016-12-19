@@ -92,3 +92,4 @@ ENV/
 # self config
 datasets
 Data
+*.zip

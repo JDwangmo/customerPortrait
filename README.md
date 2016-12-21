@@ -5,7 +5,10 @@
 - 统计 各类特征的分布情况 ： 
 
 - Project 结构
-    - 初赛：preliminary
+    - 初赛：preliminary:
+        - 数据：preliminary/客户画像
+        - 程序：preliminary/DataSet2.0
+        - 因为初赛没啥东西，所以全部打包。存于[网盘]()，需要时候再打开。
     - 复赛：semi-finals
         - 程序
             - main.ipynb：主程序

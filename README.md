@@ -8,7 +8,7 @@
     - 初赛：preliminary:
         - 数据：preliminary/客户画像
         - 程序：preliminary/DataSet2.0
-        - 因为初赛没啥东西，所以全部打包。存于[网盘]()，需要时候再打开。
+        - 因为初赛没啥东西，所以全部打包。存于[网盘](pan.baidu.com)，需要时候再打开。
     - 复赛：semi-finals
         - 程序
             - main.ipynb：主程序
@@ -28,8 +28,8 @@
                 - 初赛：A榜 - 0.22992，排第52; B榜 - 0.22722，排第53;
                 - 复赛：A榜 - 0.70404，排第9; B榜 - 0.70925，排第8;
         - 数据集：
-          - Data_Update： 修正后的比赛数据集  ----> 为节省空间，已进行压缩和[存盘]()，可以直接下载压缩到  semi-finals 文件夹即可
-          - data_temp：数据缓存  ----> 为节省空间，已进行压缩和[存盘]()，可以直接下载压缩到  semi-finals 文件夹即可
+          - Data_Update： 修正后的比赛数据集  ----> 为节省空间，已进行压缩和[存盘](pan.baidu.com)，可以直接下载压缩到  semi-finals 文件夹即可
+          - data_temp：数据缓存  ----> 为节省空间，已进行压缩和[存盘](pan.baidu.com)，可以直接下载压缩到  semi-finals 文件夹即可
             - test_data01_a_worker_per_user.csv： 测试集特征
             - train_data01_a_worker_per_user.csv： 训练集特征
             - test_data09_merge_label_df.csv： 表9测试集特征
